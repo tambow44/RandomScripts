@@ -3,8 +3,8 @@
 PATH=${PATH}:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin
 export PATH
 
-PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\e[35m\]\A\[\e[m\]\[\e[36m\]]\[\e[m\] \$  "
-export PS1
+#export PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\e[35m\]\A\[\e[m\]\[\e[36m\]]\[\e[m\] ~  \n\$ "
+export PS1=" \[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\e[35m\]\A\[\e[m\]\[\e[36m\]]\[\e[m\] \[\e[32m\]\W\[\e[m\] $ "
 
 # User specific aliases and functions
 ##### ALIAS #####
@@ -12,7 +12,12 @@ export PS1
 alias    cls='clear'
 alias    src='source ~/.bash_profile'
 alias     bc='bc -l'
-alias   logf="ls -t | egrep -e '[0-9'.log$' | head -1"
+alias   logf="ls -t | egrep -e '[0-9].log$' | head -1"
+
+
+if [ -f "$(command -v vim)" ]; then
+        alias vi='$(command -v vim)'
+fi
 
 
 ##### FUNCTIONS #####
@@ -31,14 +36,6 @@ lit () {
                 less -p "$@" $(logf)
         else
                 less $(logf)
-        fi
-}
-
-vim() {
-        if command -v vim 2>/dev/null; then
-                vim
-        else
-                vi
         fi
 }
 
