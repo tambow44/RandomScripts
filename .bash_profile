@@ -3,71 +3,75 @@
 #       Credit to Thomas Blakely (Thomas.Blakely001@msd.govt.nz)
 #
 
-PATH=${PATH}:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin
-export PATH
+##### PATH AND SHELL
 
-#export PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\e[35m\]\A\[\e[m\]\[\e[36m\]]\[\e[m\] ~  \n\$ "
-export PS1="\[\e[32m\]\u\[\e[m\]\[\e[36m\]@\[\e[m\]\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\[\e[35m\]\t\[\e[m\]\[\e[36m\]]\[\e[m\]\] \[\e[32m\]\W\[\e[m\] \[\e[36m\]~$\[\e[m\] "
+	export PATH=${PATH}:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/boksm/bin/
 
-# User specific aliases and functions
-##### ALIAS #####
+	export PS1="\[\e[32m\]\u\[\e[m\]\[\e[36m\]@\[\e[m\]\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\[\e[35m\]\t\[\e[m\]\[\e[36m\]]\[\e[m\]\] \[\e[32m\]\W\[\e[m\] \[\e[36m\]~$\[\e[m\] "
+	export PS2="\[\e[33m\]>>\[\e[m\]  "
 
-alias    cls='clear'
-alias    src='source ~/.bash_profile'
-alias     bc='bc -l'
-alias   logf="ls -t | egrep -e '[0-9].log$' | head -1"
+##### ALIASES
 
+	alias	  bc='bc -l'
+	alias	 cls='clear'
+	alias	 src='source ~/.bash_profile ; clear'
+	alias	  ll='ls --color -lha'
+	alias	  ls='ls --color=auto'
+	alias	logf="ls -t | egrep -e '[0-9].log$' | head -1"
 
 if [ -f "$(command -v vim)" ]; then
-        alias vi='$(command -v vim)'
+	alias vi='$(command -v vim)'
 fi
 
-
-##### FUNCTIONS #####
+##### FUNCTIONS
 
 tit () {
-        tail -f "$(logf)" |
-
-                if (( $# )); then
-                    grep "$@"
-                else
-                    cat
-                fi
+	printf "Tailing: $(logf) ... \n"
+	tail -f "$(logf)" |
+	
+	if (( $# )); then
+		grep -n "$@"
+	else
+		cat
+	fi
 }
 
 lit () {
-        if (( $# )); then
-                less -p "$@" $(logf)
-        else
-                less $(logf)
-        fi
+	printf "Tailing: $(logf) ... \n"
+	tail -f "$(logf)" |
+
+	if (( $# )); then
+		less -p "$@" $(logf)
+	else
+		less $(logf)
+	fi
 }
 
 grit () {
-    case "$#" in
-        0 | 1)
-            printf "Usage: {-c|-i}\n";
-            printf "\tgrit [-ci] \$string \$file\n";
-            printf "\t-c to invoke only count condition.\n";
-            printf "\t-i to invoke only insenitive condition.\n"
-        ;;
-        2)
-            zgrep $1 *$2* /dev/null | sed 's/\:/: /g'
-        ;;
-        3)
-            case "$1" in
-                "-c")
-                    zgrep -c $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
+	case "$#" in
+		0 | 1)
+			printf "Usage: {-c|-i}\n";
+			printf "\tgrit [-ci] \$string \$file\n";
+			printf "\t-c to invoke only count condition.\n";
+			printf "\t-i to invoke only insenitive condition.\n"
+		;;
+		2)
+			zgrep -n $1 *$2* /dev/null | sed 's/\:/: /g'
+		;;
+		3)
+			case "$1" in
+				"-c")
+					zgrep -c $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
                 ;;
                 "-i")
-                    zgrep -i $2 *$3* /dev/null | sed 's/\:/: /g'
+                    zgrep -in $2 *$3* /dev/null | sed 's/\:/: /g'
                 ;;
                 *[ic])
                     zgrep -ic $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
                 ;;
             esac
         ;;
-	esac
+    esac
 }
 
 proxy_on ()
@@ -75,58 +79,64 @@ proxy_on ()
     proxy="webproxysouth"
     domain="corp.ssi.govt.nz"
     port="8080"
-    printf "Username: "
+    printf "Enter your network username: "
     read name
-    echo -n "Password: "
+    echo -n "Enter your network password: "
     read -s password
     password=$(printf $password | xxd -plain | tr -d '\n' | sed 's/\(..\)/%\1/g')
     http_proxy="http://$name:$password@$proxy.$domain:$port"
+	export {https_proxy,HTTP_PROXY,HTTPS_PROXY,FTP_PROXY,SOCKS_PROXY}=$http_proxy
+	export {no_proxy,NO_PROXY}="localhost,127.0.0.1,$USERDNSDOMAIN"
 }
 
-proxy_off ()
-{
-    unset http_proxy
+proxy_off(){
+	proxyVariables=( \
+		"http_proxy" "https_proxy" "HTTP_PROXY" "HTTPS_PROXY" \
+		"FTP_PROXY" "SOCKS_PROXY" \
+		"no_proxy" "NO_PROXY" \
+	)
+
+	for i in "${proxyVariables[@]}"; do
+		unset $i
+	done
 }
-
-
-#### EXTRA STUFF
-
-if [ -d /u01/app/oracle/product/10.2.0/client ]; then
-
-        ORACLE_HOME=/u01/app/oracle/product/10.2.0/client; export ORACLE_HOME
-        PATH=/usr/local/bin:$ORACLE_HOME/bin:/usr/sbin:/usr/bin:/usr/jre1.5.0_03/lib/sparc; export PATH
-        LD_LIBRARY_PATH=$ORACLE_HOME/lib:/usr/lib:/usr/dt/lib; export LD_LIBRARY_PATH
-
-fi
 
 ## Solaris Boxes
 if [ "$(uname)" = 'SunOS' ]; then
+	alias logs='cd /var/opt/gcti/logs/'
+	
+	if [ -f /var/opt/gcti/logs/supertail.sh ]; then
+		alias stail='/var/opt/gcti/logs/supertail.sh'
+	fi
 
-        alias logs='cd /var/opt/gcti/logs/'
+	# Solaris doesn't like screen/tmux
+	if [ $TERM == "screen" ]; then
+		export TERM=xterm
+    fi
 
-        if [ -f /var/opt/gcti/logs/supertail.sh ]; then
-                alias stail='/var/opt/gcti/logs/supertail.sh'
-        fi
-
+## Linux Boxes
 elif [ "$(uname)" = 'Linux' ]; then
-
-        alias logs='cd /log/gcti'
-
+	alias logs='cd /log/gcti'
+	: # more to come
 fi
 
 ### Print Screen sessions
-
 if [ -f "$(command -v screen)" ]; then
+	if screen -list | grep -q "No Sockets"; then
+		: # do nothing
+	else
+		printf "Screens connected:\n"
+		screen -list | grep Detached | awk '{print "  *  " $1}'
+	fi
+fi
 
-        if screen -list | grep -q "No Sockets"; then
-
-                : # do nothing
-
-        else
-
-                printf "Screens connected:\n"
-                screen -list | grep Detached | awk '{print "  *  " $1}'
-
-        fi
-
+### Print tmux sessions
+if [ -f "$(command -v tmux)" ]; then
+	tmuxSessions=$(( tmux ls ) 2>&1 | grep -c 'failed')
+	if [ $tmuxSessions -eq 1 ]; then
+		: # do nothing
+	else
+		printf "Current tmux sessions:\n"
+		printf "\t* " ; tmux ls | awk '{print $1}' | sed 's/://g'
+	fi
 fi
