@@ -4,19 +4,17 @@
 #
 
 ##### PATH AND SHELL
-
 	export PATH=${PATH}:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/opt/boksm/bin/
 
 	export PS1="\[\e[32m\]\u\[\e[m\]\[\e[36m\]@\[\e[m\]\[\e[31m\]\h\[\e[m\] \[\e[36m\][\[\e[m\]\[\[\e[35m\]\t\[\e[m\]\[\e[36m\]]\[\e[m\]\] \[\e[32m\]\W\[\e[m\] \[\e[36m\]~$\[\e[m\] "
 	export PS2="\[\e[33m\]>>\[\e[m\]  "
 
 ##### ALIASES
+# Linux specific are set below, see '## Linux Boxes'
 
 	alias	  bc='bc -l'
 	alias	 cls='clear'
 	alias	 src='source ~/.bash_profile ; clear'
-	alias	  ll='ls --color -lha'
-	alias	  ls='ls --color=auto'
 	alias	logf="ls -t | egrep -e '[0-9].log$' | head -1"
 
 if [ -f "$(command -v vim)" ]; then
@@ -24,7 +22,6 @@ if [ -f "$(command -v vim)" ]; then
 fi
 
 ##### FUNCTIONS
-
 tit () {
 	printf "Tailing: $(logf) ... \n"
 	tail -f "$(logf)" |
@@ -59,15 +56,15 @@ grit () {
 			zgrep -n $1 *$2* /dev/null | sed 's/\:/: /g'
 		;;
 		3)
-			case "$1" in
-				"-c")
-					zgrep -c $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
+	case "$1" in
+		"-c")
+			zgrep -c $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
                 ;;
                 "-i")
-                    zgrep -in $2 *$3* /dev/null | sed 's/\:/: /g'
+			zgrep -in $2 *$3* /dev/null | sed 's/\:/: /g'
                 ;;
                 *[ic])
-                    zgrep -ic $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
+			zgrep -ic $2 *$3* /dev/null | grep -v ":0" | sed 's/\:/: /g'
                 ;;
             esac
         ;;
@@ -95,11 +92,13 @@ proxy_off(){
 		"FTP_PROXY" "SOCKS_PROXY" \
 		"no_proxy" "NO_PROXY" \
 	)
-
 	for i in "${proxyVariables[@]}"; do
 		unset $i
 	done
 }
+
+##### Differences for Sun vs. Linux
+# To add more, should we run into any other OS... Fear the HP-UX
 
 ## Solaris Boxes
 if [ "$(uname)" = 'SunOS' ]; then
@@ -109,43 +108,46 @@ if [ "$(uname)" = 'SunOS' ]; then
 		alias stail='/var/opt/gcti/logs/supertail.sh'
 	fi
 
-	# Solaris doesn't like screen/tmux
+	# Sun doesn't much like screen/tmux \
+	# Programs like vi/m won't work unless this is 'tricked'
 	if [ $TERM == "screen" ]; then
 		export TERM=xterm
-    fi
+	fi
 
 ## Linux Boxes
 elif [ "$(uname)" = 'Linux' ]; then
-	alias logs='cd /log/gcti'
+	alias	  ll='ls --color -lha'
+	alias	  ls='ls --color=auto'
+	alias	logs='cd /log/gcti'
+
 	: # more to come
+	
 fi
 
-### Print Screen sessions
-if [ -f "$(command -v screen)" ]; then
-	if screen -list | grep -q "No Sockets"; then
-		: # do nothing
-	else
-		printf "Screens connected:\n"
-		screen -list | grep Detached | awk '{print "  *  " $1}'
-	fi
-fi
-
-### Print tmux sessions
+### Print screen/tmux sessions
 if [ $TERM == "screen" ]; then
-
-	: # do nothing, tmux shouldn't nest!
-
-elif [ -f "$(command -v tmux)" ]; then
-
-	tmuxSessions=$(( tmux ls ) 2>&1 | grep -c 'failed')
+	: # do nothing, we shouldn't be nesting!
+else
+	### SCREEN
+	if [ -f "$(command -v screen)" ]; then
+		if screen -list | grep -q "No Sockets"; then
+			: # do nothing, no sessions!
+		else
+			printf "Screen connections:\n"
+			screen -list | grep 'Detached' | awk '{print "\t= " $1}'
+		fi
+	fi
 	
-	if [ $tmuxSessions -eq 1]; then
-	
-		: # do nothing, no sessions!
-	
-	else
-	
-		printf "Current tmux sessions:\n"
-		tmux ls | awk '{print "\t= " $1}' | sed 's/://g'
+	### TMUX
+	if [ -f "$(command -v tmux)" ]; then
+		tmuxSession=$(( tmux ls ) 2>&1 | grep -c 'failed')
+		
+		if [ $tmuxSession -gt 0 ]; then
+			: # do nothing, no sessions!
+		else
+			printf "tmux connections:\n"
+			tmux ls | awk '{print "\t= " $1}' | sed 's/://g'
+		fi
 	fi
 fi
+
