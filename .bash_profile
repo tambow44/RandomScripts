@@ -131,12 +131,21 @@ if [ -f "$(command -v screen)" ]; then
 fi
 
 ### Print tmux sessions
-if [ -f "$(command -v tmux)" ]; then
+if [ $TERM == "screen" ]; then
+
+	: # do nothing, tmux shouldn't nest!
+
+elif [ -f "$(command -v tmux)" ]; then
+
 	tmuxSessions=$(( tmux ls ) 2>&1 | grep -c 'failed')
-	if [ $tmuxSessions -eq 1 ]; then
-		: # do nothing
+	
+	if [ $tmuxSessions -eq 1]; then
+	
+		: # do nothing, no sessions!
+	
 	else
+	
 		printf "Current tmux sessions:\n"
-		printf "\t* " ; tmux ls | awk '{print $1}' | sed 's/://g'
+		tmux ls | awk '{print "\t= " $1}' | sed 's/://g'
 	fi
 fi
