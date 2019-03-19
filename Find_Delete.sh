@@ -1,13 +1,20 @@
 #!/bin/bash
 
+# File to search
+FILE_NAME="$1"
+
+# '/tmp/file.sh' = file
+SCRIPT="$(echo $0 | sed 's/\.[^.]*$//g;s/.*\///')"
+
 # Test bed
 case "$1" in
    CREATE) # Make the monkey !
       COUNT=0
-
+      mkdir /tmp/test
+      
       while [ "$COUNT" -lt 10 ]
       do
-         touch "$HOME/test/monkey_gibberish_$COUNT"
+         touch "/tmp/test/monkey_gibberish_$COUNT"
          COUNT="$((COUNT + 1))"
       done
 
@@ -15,21 +22,16 @@ case "$1" in
    ;;
    RESET) # Destroy the monkey !
 
-      rm $HOME/test/monkey_gibberish_*
+      rm -rf /tmp/test/
 
       exit 0
    ;;
 esac
 
-# File to search
-FILE_NAME="$1"
-
-# '/tmp/file.sh' = file
-SCRIPT="$(echo $0 | sed 's/\.[^.]*$//g;s/.*\///')"
-
 # Initialise temporary file : "script_name.tmp_20190318_234200"
 TMP_FILE="/tmp/$SCRIPT.tmp_$(date +'%y%m%d_%H%M%S')"
 touch $TMP_FILE
+
 
 # Find files matching, send to $TMP_FILE; don't output
 sudo find / -name *$FILE_NAME* | tee "$TMP_FILE" > /dev/null
