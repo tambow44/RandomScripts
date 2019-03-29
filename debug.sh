@@ -34,7 +34,8 @@ TMP_FILE2=$TMP_FILE\2
    sed 's|/var/opt/gcti/logs/urs/||g' "$TMP_FILE" > "$TMP_FILE2"
    mv "$TMP_FILE2" "$TMP_FILE"
 
-NUM_RESULTS=$(echo "($(wc -l "$TMP_FILE" | awk '{print $1}') / 2) / 3" | /usr/bin/bc)
+NUM_RESULTS=$(echo "($(wc -l "$TMP_FILE" | awk '{print $1}'))" | /usr/bin/bc)
+[ -z "$NUM_RESULTS" ] && NUM_RESULTS=0
 
    if [ "$NUM_RESULTS" -gt 0 ]; then
          printf "Total Found: %s\n\n" "$NUM_RESULTS" | cat - "$TMP_FILE" > "$TMP_FILE2" && mv "$TMP_FILE2" "$TMP_FILE"
