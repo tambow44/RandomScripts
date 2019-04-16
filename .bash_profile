@@ -1,6 +1,4 @@
 #
-#       For use @ Ministry of Social Development
-#       Credit to Thomas Blakely (Thomas.Blakely001@msd.govt.nz)
 #
 
 ##### PATH AND SHELL
@@ -19,9 +17,24 @@
 
 if [ -f "$(command -v vim)" ]; then
 	alias vi='$(command -v vim)'
+	alias v='$(command -v vim)'
+	export EDITOR=vim
 fi
 
 ##### FUNCTIONS
+
+clang () {
+    if [ $# != 1 ]; then
+	printf "error: no input files"
+	return 0
+else
+	FILE="$(echo $1 | sed 's/\.[a-z]*$//g')"
+	/usr/bin/clang $1 -o $FILE.o -Wall -Wextra -Wpedantic -std=c99
+fi
+}
+
+
+
 tit () {
 	printf "Tailing: $(logf) ... \n"
 	tail -f "$(logf)" |
