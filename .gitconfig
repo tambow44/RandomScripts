@@ -1,16 +1,18 @@
 [user]
-   email = thomas.blakely@gmx.com
-   name = Thomas Blakely
+           name = Thomas Blakely
+          email = thomas.blakely@gmx.com
 [core]
-   editor = vim
+         editor = vim
 [color]
-   status = auto
-   branch = color.interactive
-   interactive = auto
-   diff = auto
+         status = auto
+         branch = color.interactive
+    interactive = auto
+           diff = auto
 [http]
-   sslVerify = false
-   proxy = ""
-   proxyAuthMethod = basic
+      sslVerify = false
+          proxy = "http://<username>:<password>@<address>:<port>"
+proxyAuthMethod = basic
 [https]
-   sslVerify = false
+      sslVerify = false
+[credential]
+         helper = store
