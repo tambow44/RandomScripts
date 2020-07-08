@@ -13,6 +13,8 @@ alias  bc='bc -l'
 alias  ll='ls --color -lha'
 alias  rm='rm'
 alias  df='df -kh'
+alias  l="ls -al | more"
+alias  m="more"
 
 if [ -f "$(command -v vim)" ]; then
    alias vi='$(command -v vim)'
